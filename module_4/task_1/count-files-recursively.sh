@@ -12,8 +12,12 @@ define -i totalFiles=0
 echo "Files found in directories (recursively):"
 for dirName in "$@"
 do
-  filesNumber=$(find $dirName -type f | wc -l)
-  totalFiles+=1
-  printf "    %-16s %4d file(s)\n" $dirName $filesNumber
+  if [ -d $dirName ]; then
+    filesNumber=$(find $dirName -type f | wc -l)
+    totalFiles+=1
+    printf "    %-16s %4d file(s)\n" $dirName $filesNumber
+  else
+    printf "    %-16s is not found\n" $dirName
+  fi
 done
 echo "TOTAL: $totalFiles file(s)"
