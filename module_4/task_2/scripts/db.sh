@@ -43,6 +43,25 @@ function add {
   fi
 
   echo "$username,$role" >> $usersDbPath
+  echo "$username,$role is saved"
+}
+
+function backup {
+  backupFileName=$(date +'%Y-%m-%d-%H-%M-%S')-users.db.backup
+  cp $usersDbPath $dataDir/$backupFileName
+  echo "Backup is created"
+}
+
+function restore {
+  latestBackupFile=$(ls $dataDir/*.backup | tail -n 1)
+
+  if [[ ! -f $latestBackupFile ]]; then
+    echo "Backup file not found"
+    exit 1
+  fi
+
+  cat $latestBackupFile > $usersDbPath
+  echo "Backup is restored from $latestBackupFile"
 }
 
 case "$command" in
