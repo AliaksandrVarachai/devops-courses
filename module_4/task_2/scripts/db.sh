@@ -2,21 +2,6 @@ rootDir=$(readlink -f "..")
 dataDir=$rootDir/data
 usersDbPath=$dataDir/users.db
 
-
-
-# db.sh | db.sh help => must check users.db existence
-
-# prints instructions how to use commands add, backup, find, list, help
-
-# creates a new file %date%-users.db.backup.db
-
-# Takes the last created backup (or "no backup file found")
-# db.sh find
-
-# Prompts
-#echo `dirname "$(readlink -f "$BASH_SOURCE")"`
-
-commandErrorMessage="Invalid command $*. Use '$0 help' for assistance"
 command=$1
 optionalParam=$2
 
@@ -47,13 +32,13 @@ function add {
 }
 
 function backup {
-  backupFileName=$(date +'%Y-%m-%d-%H-%M-%S')-users.db.backup
+  local backupFileName=$(date +'%Y-%m-%d-%H-%M-%S')-users.db.backup
   cp $usersDbPath $dataDir/$backupFileName
   echo "Backup is created"
 }
 
 function restore {
-  latestBackupFile=$(ls $dataDir/*.backup | tail -n 1)
+  local latestBackupFile=$(ls $dataDir/*.backup | tail -n 1)
 
   if [[ ! -f $latestBackupFile ]]; then
     echo "Backup file not found"
@@ -64,17 +49,40 @@ function restore {
   echo "Backup is restored from $latestBackupFile"
 }
 
+function find {
+  read -p "Username to search: " username
+  local searchResults=$(grep -i $username $usersDbPath)
+
+  if [ -z "$searchResults" ]; then
+    echo "User is not found"
+  else
+    echo "$searchResults"
+  fi
+}
+
+function list {
+  if [[ $optionalParam == "inverse" ]]; then
+    cat -n $usersDbPath | tac
+  else
+    cat -n $usersDbPath
+  fi
+}
+
+function help {
+  echo "Manages users in a database"
+  echo "Syntax: db.sh [command] [optionalParam]"
+  echo "List of available commands:"
+  echo "  add      Adds a user to DB"
+  echo "  backup   Create a backup of users' DB"
+  echo "  find     Finds a user info in DB"
+  echo "  list     Displays the full list of users. If [optionalParam=reverse], in reverse order"
+}
+
 case "$command" in
   add) add ;;
   backup) backup ;;
   restore) restore ;;
   find) find ;;
   list) list ;;
-  help | *) echo help ;;
+  help | *) help ;;
 esac
-
-
-
-
-
-
