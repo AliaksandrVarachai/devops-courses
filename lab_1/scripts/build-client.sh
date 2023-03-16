@@ -12,12 +12,14 @@ export ENV_CONFIGURATION=$configurationParam
 sourceDir=dist
 artifactName=client-app.zip
 
+source count-files-recursively.sh
+
 npm install
-# answers "no" for request of using stats
+# Answers "no" for request of using stats
 yes n | npm run build -- --configuration=$ENV_CONFIGURATION
 
-
-
+# Calculates files recursively in sourceDir
+countFilesRecursively $sourceDir
 
 # builds artifact
 if [ -e $artifactName ]; then
