@@ -14,7 +14,9 @@ artifactName=client-app.zip
 
 npm install
 # answers "no" for request of using stats
-yes n | ng build --configuration=$ENV_CONFIGURATION
+yes n | npm run build -- --configuration=$ENV_CONFIGURATION
+
+
 
 
 # builds artifact
