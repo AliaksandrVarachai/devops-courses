@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-defaultPipelineName="pipeline"
-defaultBranchName="develop"
+defaultPipelinePath="./pipeline.json"
+defaultBranchName="main"
+defaultOwner="aliaksandrvarachai"
+defaultRepo="shop-angular-cloudfront"
+defaultPollForSourceChanges=false
+defaultEnvironmentVariables="[{\"name\":\"BUILD_CONFIGURATION\",\"value\":\"{{BUILD_CONFIGURATION value}}\",\"type\":\"PLAINTEXT\"}]"
 
 # colors
 red=$'\e[1;31m';
@@ -21,18 +25,50 @@ function checkJQ {
 
 checkJQ
 
-read -p "Enter a code pipeline name [$defaultPipelineName]: " pipelineName
-pipeline=${pipelineName:-$defaultPipelineName}
+read -p "Enter a code pipeline path [$defaultPipelinePath]: " pipelinePath
+pipelinePath=${pipelinePath:-$defaultPipelinePath}
+
+if [ ! -e $pipelinePath ]; then
+  echo "${red}Pipeline file '$pipelinePath' is no found${end}"
+  exit 1
+fi
 
 read -p "Enter a source branch name [$defaultBranchName]: " branchName
 branchName=${branchName:-$defaultBranchName}
 
-echo $pipeline
+read -p "Enter owner name [$defaultOwner]: " owner
+owner=${owner:-$defaultOwner}
 
+read -p "Enter repository name [$defaultRepo]: " repo
+repo=${repo:-$defaultRepo}
 
+read -p "Enter PollForSourceChanges property [$defaultPollForSourceChanges]: " pollForSourceChanges
+pollForSourceChanges=${pollForSourceChanges:-$defaultPollForSourceChanges}
 
-# builds artifact
-#if [ -e $artifactName ]; then
-#  rm $artifactName
-#fi
-#zip -r $artifactName $sourceDir
+prettifiedJSON=
+
+read -p "Enter EnvironmentVariables property[$defaultEnvironmentVariables]: " environmentVariables
+environmentVariables=${environmentVariables:-defaultEnvironmentVariables}
+
+tempPipelineName="pipeline.$(date +'%Y-%m-%dT%T').json";
+
+# Removes metadata
+# Increments version
+# Sets Branch, Owner, Repo, PollForSourceChanges, EnvironmentVariables
+jq \
+--arg branchName "$branchName" \
+--arg owner "$owner" \
+--arg repo "$repo" \
+--arg pollForSourceChanges "$pollForSourceChanges" \
+--arg environmentVariables "$environmentVariables" \
+'del(.metadata)
+| .pipeline.version += 1
+| .pipeline.stages[].actions[].configuration.Branch = $branchName
+| .pipeline.stages[].actions[].configuration.Owner = $owner
+| .pipeline.stages[].actions[].configuration.Repo = $repo
+| .pipeline.stages[].actions[].configuration.PollForSourceChanges = $pollForSourceChanges
+| .pipeline.stages[1].actions[0].configuration.EnvironmentVariables = $environmentVariables
+' \
+"$pipelinePath" > "$tempPipelineName"
+
+echo "${grn}New pipeline is saved to '$tempPipelineName'${end}"
