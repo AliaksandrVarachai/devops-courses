@@ -1,28 +1,38 @@
 #!/usr/bin/env bash
 
-# example 1 (production)
-# ./build-client.sh production
-#
-# example 2 (non-production)
-# ./build-client.sh
+defaultPipelineName="pipeline"
+defaultBranchName="develop"
 
-configurationParam=$1
-export ENV_CONFIGURATION=$configurationParam
+# colors
+red=$'\e[1;31m';
+grn=$'\e[1;32m';
+end=$'\e[0m';
 
-sourceDir=dist
-artifactName=client-app.zip
+function checkJQ {
+  type jq > /dev/null 2>&1
+  exitCode=$?
 
-source count-files-recursively.sh
+  if [ $exitCode -eq 0 ]; then
+    echo "${grn}'jq' is found!${end}"
+  else
+    echo "${red}'jq' is not found. Please install it first${end}"
+  fi
+}
 
-npm install
-# Answers "no" for request of using stats
-yes n | npm run build -- --configuration=$ENV_CONFIGURATION
+checkJQ
 
-# Calculates files recursively in sourceDir
-countFilesRecursively $sourceDir
+read -p "Enter a code pipeline name [$defaultPipelineName]: " pipelineName
+pipeline=${pipelineName:-$defaultPipelineName}
+
+read -p "Enter a source branch name [$defaultBranchName]: " branchName
+branchName=${branchName:-$defaultBranchName}
+
+echo $pipeline
+
+
 
 # builds artifact
-if [ -e $artifactName ]; then
-  rm $artifactName
-fi
-zip -r $artifactName $sourceDir
+#if [ -e $artifactName ]; then
+#  rm $artifactName
+#fi
+#zip -r $artifactName $sourceDir
