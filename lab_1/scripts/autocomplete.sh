@@ -22,8 +22,6 @@ commands=(
 
 printAllCommands() {
   local regex=$1
-  old_IFS=$IFS
-  IFS=$'\n'
   local isFirstLinePrinted=false
   for command in "${commands[@]}"; do
     if [[ "$command" =~ $regex ]]; then
@@ -34,7 +32,6 @@ printAllCommands() {
       echo $command
     fi
   done
-  IFS=old_IFS
 }
 
 printSuggestions() {
@@ -50,9 +47,6 @@ printSuggestions() {
 
 _dockCompletions() {
   regexp="^${COMP_WORDS[@]}"
-
-  old_IFS=$IFS
-  IFS=$'\n'
   if [[ ${#COMP_WORDS[@]} -eq 2 && -z ${COMP_WORDS[1]} ]]; then
     suggestions=("${commands[@]}")
     printSuggestions
@@ -60,7 +54,6 @@ _dockCompletions() {
     suggestions=($(compgen -W "$(printAllCommands "$regexp")"))
     printSuggestions
   fi
-  IFS=$old_IFS
 }
 
 complete -F _dockCompletions docker
